@@ -12,6 +12,7 @@ package com.demonwav.mcdev.platform.fabric.creator
 
 import com.demonwav.mcdev.creator.BaseProjectCreator
 import com.demonwav.mcdev.creator.CreatorStep
+import com.demonwav.mcdev.creator.LicenseStep
 import com.demonwav.mcdev.creator.PostMultiModuleAware
 import com.demonwav.mcdev.creator.buildsystem.BuildSystem
 import com.demonwav.mcdev.creator.buildsystem.gradle.BasicGradleFinalizerStep
@@ -22,7 +23,6 @@ import com.demonwav.mcdev.creator.buildsystem.gradle.GradleWrapperStep
 import com.demonwav.mcdev.creator.buildsystem.gradle.SimpleGradleSetupStep
 import com.demonwav.mcdev.platform.fabric.EntryPoint
 import com.demonwav.mcdev.platform.fabric.util.FabricConstants
-import com.demonwav.mcdev.util.License
 import com.demonwav.mcdev.util.addAnnotation
 import com.demonwav.mcdev.util.addImplements
 import com.demonwav.mcdev.util.addMethod
@@ -58,7 +58,6 @@ import com.intellij.psi.PsiModifierListOwner
 import com.intellij.util.IncorrectOperationException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import java.util.Locale
 
 class FabricProjectCreator(
@@ -83,7 +82,7 @@ class FabricProjectCreator(
         }
         steps += GradleGitignoreStep(project, rootDirectory)
         config.license?.let {
-            steps += LicenseStep(project, rootDirectory, it, config)
+            steps += LicenseStep(project, rootDirectory, it, config.authors.joinToString(", "))
         }
         steps += BasicGradleFinalizerStep(rootModule, rootDirectory, buildSystem)
         if (config.mixins) {
@@ -107,7 +106,7 @@ class FabricProjectCreator(
             steps += GenSourcesStep(project, rootDirectory)
         }
         config.license?.let {
-            steps += LicenseStep(project, rootDirectory, it, config)
+            steps += LicenseStep(project, rootDirectory, it, config.authors.joinToString(", "))
         }
         if (config.mixins) {
             steps += MixinConfigStep(project, buildSystem)
@@ -142,28 +141,6 @@ class GenSourcesStep(
             settings.vmOptions = "-Xmx1G"
         }
         indicator.text2 = null
-    }
-}
-
-class LicenseStep(
-    private val project: Project,
-    private val rootDirectory: Path,
-    private val license: License,
-    private val config: FabricProjectConfig
-) : CreatorStep {
-
-    override fun runStep(indicator: ProgressIndicator) {
-        val licenseFile = rootDirectory.resolve("LICENSE")
-
-        val fileText = FabricTemplate.applyLicenseTemplate(project, license, config)
-
-        Files.write(
-            licenseFile,
-            fileText.toByteArray(Charsets.UTF_8),
-            StandardOpenOption.CREATE,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.TRUNCATE_EXISTING
-        )
     }
 }
 

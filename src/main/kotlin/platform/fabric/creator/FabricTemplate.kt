@@ -23,7 +23,6 @@ import com.demonwav.mcdev.util.MinecraftTemplates.Companion.FABRIC_SUBMODULE_BUI
 import com.demonwav.mcdev.util.MinecraftTemplates.Companion.FABRIC_SUBMODULE_GRADLE_PROPERTIES_TEMPLATE
 import com.demonwav.mcdev.util.toPackageName
 import com.intellij.openapi.project.Project
-import java.time.ZonedDateTime
 
 object FabricTemplate : BaseTemplate() {
 
@@ -92,18 +91,6 @@ object FabricTemplate : BaseTemplate() {
         config: FabricProjectConfig
     ): String {
         return project.applyGradleTemplate(FABRIC_SUBMODULE_GRADLE_PROPERTIES_TEMPLATE, buildSystem, config)
-    }
-
-    fun applyLicenseTemplate(
-        project: Project,
-        license: License,
-        config: FabricProjectConfig
-    ): String {
-        val props = mapOf(
-            "YEAR" to ZonedDateTime.now().year.toString(),
-            "AUTHOR" to config.authors.joinToString(", ")
-        )
-        return project.applyTemplate("${license.id}.txt", props)
     }
 
     fun applyFabricModJsonTemplate(

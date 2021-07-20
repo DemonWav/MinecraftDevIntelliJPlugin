@@ -13,6 +13,7 @@ package com.demonwav.mcdev.platform.forge.creator
 import com.demonwav.mcdev.creator.BaseProjectCreator
 import com.demonwav.mcdev.creator.BasicJavaClassStep
 import com.demonwav.mcdev.creator.CreatorStep
+import com.demonwav.mcdev.creator.LicenseStep
 import com.demonwav.mcdev.creator.buildsystem.BuildSystem
 import com.demonwav.mcdev.creator.buildsystem.gradle.BasicGradleFinalizerStep
 import com.demonwav.mcdev.creator.buildsystem.gradle.GradleBuildSystem
@@ -135,6 +136,7 @@ open class Fg3ProjectCreator(
             Fg3ProjectFilesStep(project, buildSystem, config),
             Fg3CompileJavaStep(project, rootDirectory),
             GradleGitignoreStep(project, rootDirectory),
+            LicenseStep(project, rootDirectory, config.license, config.authors.joinToString(", ")),
             BasicGradleFinalizerStep(rootModule, rootDirectory, buildSystem),
             ForgeRunConfigsStep(buildSystem, rootDirectory, config, CreatedModuleType.SINGLE)
         )
@@ -161,6 +163,7 @@ open class Fg3ProjectCreator(
             setupMainClassStep(),
             Fg3ProjectFilesStep(project, buildSystem, config),
             Fg3CompileJavaStep(project, rootDirectory),
+            LicenseStep(project, rootDirectory, config.license, config.authors.joinToString(", ")),
             ForgeRunConfigsStep(buildSystem, projectBaseDir, config, CreatedModuleType.MULTI)
         )
 

@@ -131,7 +131,8 @@ object Fg3Template : BaseTemplate() {
             "MOD_NAME" to config.pluginName,
             "FORGE_SPEC_VERSION" to config.forgeVersion.parts[0].versionString,
             "MC_VERSION" to config.mcVersion.toString(),
-            "MC_NEXT_VERSION" to "1.$nextMcVersion"
+            "MC_NEXT_VERSION" to "1.$nextMcVersion",
+            "LICENSE" to config.license.toString()
         )
         props["DESCRIPTION"] = config.description ?: ""
         config.updateUrl?.let { url ->

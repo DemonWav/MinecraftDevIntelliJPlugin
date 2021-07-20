@@ -18,6 +18,7 @@ import com.demonwav.mcdev.creator.buildsystem.gradle.GradleCreator
 import com.demonwav.mcdev.platform.PlatformType
 import com.demonwav.mcdev.platform.forge.ForgeModuleType
 import com.demonwav.mcdev.platform.mcp.McpVersionPair
+import com.demonwav.mcdev.util.License
 import com.demonwav.mcdev.util.SemanticVersion
 import com.intellij.openapi.module.Module
 import java.nio.file.Path
@@ -35,6 +36,7 @@ class ForgeProjectConfig : ProjectConfig(), GradleCreator {
     var forgeVersion: SemanticVersion = SemanticVersion.release()
     var mcVersion: SemanticVersion = SemanticVersion.release()
     var mixins = false
+    var license = License.ALL_RIGHTS_RESERVED
 
     override val preferredBuildSystem = BuildSystemType.GRADLE
 

@@ -21,9 +21,11 @@ import com.demonwav.mcdev.platform.PlatformType
 import com.demonwav.mcdev.platform.forge.version.ForgeVersion
 import com.demonwav.mcdev.platform.mcp.version.McpVersion
 import com.demonwav.mcdev.platform.mcp.version.McpVersionEntry
+import com.demonwav.mcdev.util.License
 import com.demonwav.mcdev.util.SemanticVersion
 import com.demonwav.mcdev.util.modUpdateStep
 import com.intellij.ui.CollectionComboBoxModel
+import com.intellij.ui.EnumComboBoxModel
 import java.awt.event.ActionListener
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
@@ -56,6 +58,7 @@ class ForgeProjectSettingsWizard(private val creator: MinecraftProjectCreator) :
     private lateinit var authorsField: JTextField
     private lateinit var websiteField: JTextField
     private lateinit var updateUrlField: JTextField
+    private lateinit var licenseBox: JComboBox<License>
     private lateinit var mixinsCheckbox: JCheckBox
     private lateinit var minecraftVersionBox: JComboBox<SemanticVersion>
     private lateinit var forgeVersionBox: JComboBox<SemanticVersion>
@@ -132,6 +135,9 @@ class ForgeProjectSettingsWizard(private val creator: MinecraftProjectCreator) :
             return
         }
         currentJob = updateVersions()
+
+        licenseBox.model = EnumComboBoxModel(License::class.java)
+        licenseBox.selectedItem = License.ALL_RIGHTS_RESERVED
     }
 
     private fun setForgeVersion(data: Data) {
@@ -175,6 +181,7 @@ class ForgeProjectSettingsWizard(private val creator: MinecraftProjectCreator) :
         }
 
         conf.mixins = mixinsCheckbox.isSelected
+        conf.license = licenseBox.selectedItem as? License ?: License.ALL_RIGHTS_RESERVED
         conf.mcVersion = this.version ?: SemanticVersion.release()
     }
 
