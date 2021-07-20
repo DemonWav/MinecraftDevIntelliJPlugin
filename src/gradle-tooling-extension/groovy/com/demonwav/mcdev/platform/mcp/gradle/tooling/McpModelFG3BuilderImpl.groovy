@@ -11,6 +11,8 @@
 package com.demonwav.mcdev.platform.mcp.gradle.tooling
 
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Provider
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.gradle.tooling.ErrorMessageBuilder
 import org.jetbrains.plugins.gradle.tooling.ModelBuilderService
@@ -46,8 +48,20 @@ final class McpModelFG3BuilderImpl implements ModelBuilderService {
         }
 
         def taskOutput = task.outputs.files.singleFile
+
+        // Cheap way to be compatible with FG5
+        def mappings = extension.mappings
+        if (mappings instanceof Provider) {
+            mappings = mappings.get()
+        }
+
+        def accessTransformers = extension.accessTransformers
+        if (accessTransformers instanceof FileCollection) {
+            accessTransformers = accessTransformers.asList()
+        }
+
         //noinspection GroovyAssignabilityCheck
-        return new McpModelFG3Impl(minecraftDepVersions, extension.mappings, taskOutput, task.name, extension.accessTransformers)
+        return new McpModelFG3Impl(minecraftDepVersions, mappings, taskOutput, task.name, accessTransformers)
     }
 
     @Override
