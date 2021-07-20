@@ -32,7 +32,7 @@ fun runGradleTaskAndWait(project: Project, dir: Path, func: (ExternalSystemTaskE
     latch.await()
 }
 
-private fun runGradleTaskWithCallback(
+fun runGradleTaskWithCallback(
     project: Project,
     dir: Path,
     func: (ExternalSystemTaskExecutionSettings) -> Unit,
@@ -40,7 +40,8 @@ private fun runGradleTaskWithCallback(
 ) {
     val settings = ExternalSystemTaskExecutionSettings().apply {
         externalSystemIdString = GradleConstants.SYSTEM_ID.id
-        externalProjectPath = dir.toString()
+        // Use forward slashes otherwise we don't get the 'short' project name but a full path on Windows
+        externalProjectPath = dir.toString().replace('\\', '/')
         func(this)
     }
 
