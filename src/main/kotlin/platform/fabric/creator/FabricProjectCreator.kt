@@ -87,7 +87,7 @@ class FabricProjectCreator(
         }
         steps += BasicGradleFinalizerStep(rootModule, rootDirectory, buildSystem)
         if (config.mixins) {
-            steps += MixinConfigStep(project, buildSystem)
+            steps += MixinConfigStep(project, buildSystem, config)
         }
         createPostSteps(steps)
         steps += FabricModJsonStep(project, buildSystem, config)
@@ -110,7 +110,7 @@ class FabricProjectCreator(
             steps += LicenseStep(project, rootDirectory, it, config)
         }
         if (config.mixins) {
-            steps += MixinConfigStep(project, buildSystem)
+            steps += MixinConfigStep(project, buildSystem, config)
         }
         return steps
     }
@@ -251,10 +251,11 @@ class FabricModJsonStep(
 
 class MixinConfigStep(
     private val project: Project,
-    private val buildSystem: BuildSystem
+    private val buildSystem: BuildSystem,
+    private val config: FabricProjectConfig
 ) : CreatorStep {
     override fun runStep(indicator: ProgressIndicator) {
-        val text = FabricTemplate.applyMixinConfigTemplate(project, buildSystem)
+        val text = FabricTemplate.applyMixinConfigTemplate(project, buildSystem, config)
         val dir = buildSystem.dirsOrError.resourceDirectory
         runWriteTask {
             CreatorStep.writeTextToFile(project, dir, "${buildSystem.artifactId}.mixins.json", text)

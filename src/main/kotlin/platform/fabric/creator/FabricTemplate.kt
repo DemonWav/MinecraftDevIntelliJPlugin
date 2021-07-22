@@ -32,14 +32,15 @@ object FabricTemplate : BaseTemplate() {
         buildSystem: BuildSystem,
         config: FabricProjectConfig
     ): String {
-        val props = mutableMapOf(
+        val props = mutableMapOf<String, Any>(
             "GROUP_ID" to buildSystem.groupId,
             "ARTIFACT_ID" to buildSystem.artifactId,
             "VERSION" to buildSystem.version,
             "MC_VERSION" to config.mcVersion,
             "YARN_MAPPINGS" to config.yarnVersion,
             "LOADER_VERSION" to config.loaderVersion.toString(),
-            "LOOM_VERSION" to config.loomVersion.toString()
+            "LOOM_VERSION" to config.loomVersion.toString(),
+            "JAVA_VERSION" to config.javaVersion
         )
         config.yarnClassifier?.let {
             props["YARN_CLASSIFIER"] = it
@@ -111,7 +112,7 @@ object FabricTemplate : BaseTemplate() {
         buildSystem: BuildSystem,
         config: FabricProjectConfig
     ): String {
-        val props = mutableMapOf(
+        val props = mutableMapOf<String, Any>(
             "ARTIFACT_ID" to buildSystem.artifactId,
             "MOD_NAME" to config.pluginName,
             "MOD_DESCRIPTION" to (config.description ?: ""),
@@ -122,6 +123,7 @@ object FabricTemplate : BaseTemplate() {
             },
             "LOADER_VERSION" to config.loaderVersion.toString(),
             "MC_VERSION" to config.semanticMcVersion.toString(),
+            "JAVA_VERSION" to config.javaVersion,
             "LICENSE" to ((config.license ?: License.ALL_RIGHTS_RESERVED).id)
         )
         config.apiVersion?.let {
@@ -136,11 +138,13 @@ object FabricTemplate : BaseTemplate() {
 
     fun applyMixinConfigTemplate(
         project: Project,
-        buildSystem: BuildSystem
+        buildSystem: BuildSystem,
+        config: FabricProjectConfig
     ): String {
         val packageName = "${buildSystem.groupId.toPackageName()}.${buildSystem.artifactId.toPackageName()}.mixin"
         val props = mapOf(
-            "PACKAGE_NAME" to packageName
+            "PACKAGE_NAME" to packageName,
+            "JAVA_VERSION" to config.javaVersion
         )
         return project.applyTemplate(FABRIC_MIXINS_JSON_TEMPLATE, props)
     }

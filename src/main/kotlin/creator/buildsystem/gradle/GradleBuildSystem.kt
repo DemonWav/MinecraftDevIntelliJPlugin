@@ -86,7 +86,7 @@ class GradleBuildSystem(
     }
 
     companion object {
-        val DEFAULT_WRAPPER_VERSION = SemanticVersion.release(5, 6, 1)
+        val DEFAULT_WRAPPER_VERSION = SemanticVersion.release(7, 1, 1)
     }
 }
 
@@ -103,3 +103,9 @@ interface GradleCreator {
      */
     fun configureRootGradle(rootDirectory: Path, buildSystem: GradleBuildSystem) {}
 }
+
+data class GradlePlugin(
+    val id: String,
+    val version: String? = null,
+    val apply: Boolean = true,
+)

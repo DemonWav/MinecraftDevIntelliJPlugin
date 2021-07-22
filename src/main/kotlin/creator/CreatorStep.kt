@@ -94,23 +94,25 @@ class BasicJavaClassStep(
     private val project: Project,
     private val buildSystem: BuildSystem,
     private val className: String,
-    private val classText: String
+    private val classText: String,
+    private val openInEditor: Boolean = true,
+    private val rootProvider: (BuildSystem) -> Path = { it.dirsOrError.sourceDirectory }
 ) : CreatorStep {
     override fun runStep(indicator: ProgressIndicator) {
-        val dirs = buildSystem.dirsOrError
-
         runWriteTask {
             indicator.text = "Writing class: $className"
             val files = className.split(".")
             val className = files.last()
 
-            val sourceDir = getMainClassDirectory(dirs.sourceDirectory, files)
+            val sourceDir = getMainClassDirectory(rootProvider(buildSystem), files)
 
             val classFile = CreatorStep.writeTextToFile(project, sourceDir, "$className.java", classText)
 
-            // Set the editor focus on the created class
-            PsiManager.getInstance(project).findFile(classFile)?.let { classPsi ->
-                EditorHelper.openInEditor(classPsi)
+            if (openInEditor) {
+                // Set the editor focus on the created class
+                PsiManager.getInstance(project).findFile(classFile)?.let { classPsi ->
+                    EditorHelper.openInEditor(classPsi)
+                }
             }
         }
     }

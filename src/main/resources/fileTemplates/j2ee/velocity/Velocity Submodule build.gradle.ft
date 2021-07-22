@@ -1,32 +1,39 @@
 plugins {
     id 'java'
+    id 'eclipse'
+    id 'com.github.johnrengelman.shadow'
 }
-
-apply plugin: 'com.github.johnrengelman.shadow'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile project(':${COMMON_PROJECT_NAME}')
+    api project(':${COMMON_PROJECT_NAME}')
 }
+
+def templateSource = file('src/main/templates')
+def templateDest = layout.buildDirectory.dir('generated/sources/templates')
+def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
+    def props = [
+            'version': project.version
+    ]
+    task.inputs.properties props
+
+    task.from templateSource
+    task.into templateDest
+    task.expand props
+}
+
+sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+
+rootProject.idea.project.settings.taskTriggers.afterSync generateTemplates
+project.eclipse.synchronizationTasks(generateTemplates)
 
 shadowJar {
     dependencies {
         include(dependency(':${COMMON_PROJECT_NAME}'))
     }
 }
-
-import org.apache.tools.ant.filters.ReplaceTokens
-
-task processSources(type: Sync) {
-    from sourceSets.main.java.srcDirs
-    inputs.property 'version', version
-    filter ReplaceTokens, tokens: [version: version]
-    into "$buildDir/src"
-}
-
-compileJava.source = processSources.outputs
 
 tasks.build.dependsOn tasks.shadowJar

@@ -1,15 +1,21 @@
-apply plugin: 'com.github.johnrengelman.shadow'
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
 
 repositories {
 }
 
 dependencies {
-    compile project(':${COMMON_PROJECT_NAME}')
+    api project(':${COMMON_PROJECT_NAME}')
 }
 
 processResources {
-    from(sourceSets.main.resources.srcDirs) {
-        expand 'version': project.version
+    def props = [version: project.version]
+    inputs.properties props
+    expand props
+    filteringCharset 'UTF-8'
+    filesMatching('bungee.yml') {
+        expand props
     }
 }
 

@@ -31,6 +31,7 @@ class FabricProjectConfig : ProjectConfig(), GradleCreator {
     // Minecraft does not follow semver in the snapshots
     var mcVersion = ""
     var semanticMcVersion = SemanticVersion.release()
+    var javaVersion = 8
     var loaderVersion = SemanticVersion.release()
     var apiVersion: SemanticVersion? = null
     var apiMavenLocation: String? = null

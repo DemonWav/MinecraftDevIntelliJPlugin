@@ -11,15 +11,18 @@
 package com.demonwav.mcdev.platform.velocity.creator
 
 import com.demonwav.mcdev.creator.BaseProjectCreator
+import com.demonwav.mcdev.creator.BasicJavaClassStep
 import com.demonwav.mcdev.creator.CreateDirectoriesStep
 import com.demonwav.mcdev.creator.CreatorStep
 import com.demonwav.mcdev.creator.buildsystem.BuildDependency
 import com.demonwav.mcdev.creator.buildsystem.BuildRepository
 import com.demonwav.mcdev.creator.buildsystem.BuildSystem
+import com.demonwav.mcdev.creator.buildsystem.gradle.AddGradlePluginStep
 import com.demonwav.mcdev.creator.buildsystem.gradle.BasicGradleFinalizerStep
 import com.demonwav.mcdev.creator.buildsystem.gradle.GradleBuildSystem
 import com.demonwav.mcdev.creator.buildsystem.gradle.GradleFiles
 import com.demonwav.mcdev.creator.buildsystem.gradle.GradleGitignoreStep
+import com.demonwav.mcdev.creator.buildsystem.gradle.GradlePlugin
 import com.demonwav.mcdev.creator.buildsystem.gradle.GradleSetupStep
 import com.demonwav.mcdev.creator.buildsystem.gradle.GradleWrapperStep
 import com.demonwav.mcdev.creator.buildsystem.maven.BasicMavenFinalizerStep
@@ -115,6 +118,9 @@ class VelocityGradleCreator(
     buildSystem: GradleBuildSystem,
     config: VelocityProjectConfig
 ) : VelocityProjectCreator<GradleBuildSystem>(rootDirectory, rootModule, buildSystem, config) {
+
+    private val ideaExtPlugin = GradlePlugin("org.jetbrains.gradle.plugin.idea-ext", "1.0.1")
+
     override fun getSingleModuleSteps(): Iterable<CreatorStep> {
         val (mainClassStep, modifyStep) = setupMainClassSteps()
 
@@ -127,8 +133,10 @@ class VelocityGradleCreator(
             setupDependencyStep(),
             CreateDirectoriesStep(buildSystem, rootDirectory),
             GradleSetupStep(project, rootDirectory, buildSystem, files),
+            AddGradlePluginStep(project, rootDirectory, listOf(ideaExtPlugin)),
             mainClassStep,
             modifyStep,
+            buildConstantsStep(),
             GradleWrapperStep(project, rootDirectory, buildSystem),
             GradleGitignoreStep(project, rootDirectory),
             BasicGradleFinalizerStep(rootModule, rootDirectory, buildSystem)
@@ -145,9 +153,21 @@ class VelocityGradleCreator(
             setupDependencyStep(),
             CreateDirectoriesStep(buildSystem, rootDirectory),
             GradleSetupStep(project, rootDirectory, buildSystem, files),
+            AddGradlePluginStep(project, projectBaseDir, listOf(ideaExtPlugin)),
             mainClassStep,
-            modifyStep
+            modifyStep,
+            buildConstantsStep()
         )
+    }
+
+    private fun buildConstantsStep(): BasicJavaClassStep {
+        return BasicJavaClassStep(
+            project,
+            buildSystem,
+            config.mainClass.replaceAfterLast('.', "BuildConstants"),
+            VelocityTemplate.applyBuildConstants(project, config.mainClass.substringBeforeLast('.')),
+            false
+        ) { it.dirsOrError.sourceDirectory.resolveSibling("templates") }
     }
 }
 
@@ -174,7 +194,7 @@ class VelocityMainClassModifyStep(
             annotationBuilder + ",\nname = ${literal(config.pluginName)}"
 
             if (buildSystem is GradleBuildSystem) {
-                annotationBuilder + ",\nversion = \"@version@\""
+                annotationBuilder + ",\nversion = BuildConstants.VERSION"
             } else {
                 annotationBuilder + ",\nversion = \"${buildSystem.version}\""
             }
@@ -217,35 +237,17 @@ class VelocityMainClassModifyStep(
     private operator fun StringBuilder.plus(text: String) = this.append(text)
 }
 
-private val VELOCITY_1_1_0_SNAPSHOT = SemanticVersion.parse("1.1.0-SNAPSHOT")
-
 class VelocityDependenciesSetup(
     private val buildSystem: BuildSystem,
     private val velocityApiVersion: String
 ) : CreatorStep {
     override fun runStep(indicator: ProgressIndicator) {
-        val velocityRepo = if (velocityApiVersion.endsWith("-SNAPSHOT")) "snapshots" else "releases"
         buildSystem.repositories.add(
             BuildRepository(
                 "velocitypowered-repo",
-                "https://repo.velocitypowered.com/$velocityRepo/"
+                "https://nexus.velocitypowered.com/repository/maven-public/"
             )
         )
-
-        if (SemanticVersion.parse(velocityApiVersion) >= VELOCITY_1_1_0_SNAPSHOT) {
-            buildSystem.repositories.add(
-                BuildRepository(
-                    "minecraft-libraries",
-                    "https://libraries.minecraft.net/"
-                )
-            )
-            buildSystem.repositories.add(
-                BuildRepository(
-                    "spongepowered-repo",
-                    "https://repo.spongepowered.org/maven"
-                )
-            )
-        }
 
         buildSystem.dependencies.add(
             BuildDependency(

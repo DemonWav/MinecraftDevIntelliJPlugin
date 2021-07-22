@@ -16,6 +16,7 @@ import com.demonwav.mcdev.creator.buildsystem.BuildSystem
 import com.demonwav.mcdev.creator.buildsystem.BuildSystemTemplate
 import com.demonwav.mcdev.creator.buildsystem.BuildSystemType
 import com.demonwav.mcdev.creator.buildsystem.DirectorySet
+import com.demonwav.mcdev.util.ifNotEmpty
 import com.demonwav.mcdev.util.invokeLater
 import com.demonwav.mcdev.util.runGradleTaskAndWait
 import com.demonwav.mcdev.util.runWriteAction
@@ -164,27 +165,61 @@ fun addBuildGradleDependencies(
             .filter { it.buildSystems.contains(BuildSystemType.GRADLE) }
             .map { "maven {name = '${it.id}'\nurl = '${it.url}'\n}" }
             .toList()
-            .let { reps ->
-                if (reps.isNotEmpty()) {
-                    createRepositoriesOrDependencies(project, groovyFile, "repositories", reps)
-                }
-            }
+            .ifNotEmpty { reps -> appendExpressions(project, groovyFile, "repositories", reps) }
 
         buildSystem.dependencies.asSequence()
             .filter { it.gradleConfiguration != null }
             .map { "${it.gradleConfiguration} '${it.groupId}:${it.artifactId}:${it.version}'" }
             .toList()
-            .let { deps ->
-                if (buildSystem.dependencies.isNotEmpty()) {
-                    createRepositoriesOrDependencies(project, groovyFile, "dependencies", deps)
-                }
-            }
+            .ifNotEmpty { deps -> appendExpressions(project, groovyFile, "dependencies", deps) }
 
         return@runWriteAction file
     }
 }
 
-private fun createRepositoriesOrDependencies(
+class AddGradlePluginStep(
+    private val project: Project,
+    private val rootDirectory: Path,
+    private val plugins: Collection<GradlePlugin>,
+    private val kotlinScript: Boolean = false
+) : CreatorStep {
+    override fun runStep(indicator: ProgressIndicator) {
+        val fileName = if (kotlinScript) "build.gradle.kts" else "build.gradle"
+        val virtualFile = rootDirectory.resolve(fileName).virtualFileOrError
+        runWriteTask {
+            if (project.isDisposed) {
+                return@runWriteTask
+            }
+
+            val file = PsiManager.getInstance(project).findFile(virtualFile)
+                ?: throw IllegalStateException("Could not find $fileName")
+            file.runWriteAction {
+                if (project.isDisposed) {
+                    return@runWriteAction
+                }
+
+                val groovyFile = file as GroovyFile
+
+                plugins.asSequence()
+                    .map { plugin ->
+                        buildString {
+                            append("id \"${plugin.id}\"")
+                            plugin.version?.let { append(" version \"$it\"") }
+                            if (!plugin.apply) {
+                                append(" apply false")
+                            }
+                        }
+                    }
+                    .toList()
+                    .ifNotEmpty { plugins -> appendExpressions(project, groovyFile, "plugins", plugins) }
+
+                ReformatCodeProcessor(file, false).run()
+            }
+        }
+    }
+}
+
+private fun appendExpressions(
     project: Project,
     file: GroovyFile,
     name: String,

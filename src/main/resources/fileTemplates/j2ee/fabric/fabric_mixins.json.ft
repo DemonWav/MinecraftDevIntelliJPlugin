@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "${PACKAGE_NAME}",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_${JAVA_VERSION}",
   "mixins": [
   ],
   "client": [

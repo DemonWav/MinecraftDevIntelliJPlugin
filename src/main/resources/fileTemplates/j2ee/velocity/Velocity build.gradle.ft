@@ -1,12 +1,10 @@
 plugins {
     id 'java'
+    id 'eclipse'
 }
 
 group = '${GROUP_ID}'
 version = '${PLUGIN_VERSION}'
-
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -15,13 +13,36 @@ repositories {
 dependencies {
 }
 
-import org.apache.tools.ant.filters.ReplaceTokens
-
-task processSources(type: Sync) {
-    from sourceSets.main.java.srcDirs
-    inputs.property 'version', version
-    filter ReplaceTokens, tokens: [version: version]
-    into "$buildDir/src"
+def targetJavaVersion = 8
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
 }
 
-compileJava.source = processSources.outputs
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+def templateSource = file('src/main/templates')
+def templateDest = layout.buildDirectory.dir('generated/sources/templates')
+def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
+    def props = [
+            'version': project.version
+    ]
+    task.inputs.properties props
+
+    task.from templateSource
+    task.into templateDest
+    task.expand props
+}
+
+sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+
+rootProject.idea.project.settings.taskTriggers.afterSync generateTemplates
+project.eclipse.synchronizationTasks(generateTemplates)

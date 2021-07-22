@@ -140,7 +140,7 @@ object BukkitTemplate : BaseTemplate() {
         where C : ProjectConfig,
               C : BukkitLikeConfiguration {
         val version = when (type) {
-            BuildSystemType.GRADLE -> "@version@"
+            BuildSystemType.GRADLE -> "\${version}"
             BuildSystemType.MAVEN -> "\${project.version}"
         }
 

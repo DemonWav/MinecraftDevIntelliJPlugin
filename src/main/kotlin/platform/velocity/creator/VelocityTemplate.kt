@@ -13,6 +13,7 @@ package com.demonwav.mcdev.platform.velocity.creator
 import com.demonwav.mcdev.creator.buildsystem.BuildSystem
 import com.demonwav.mcdev.creator.buildsystem.maven.BasicMavenStep
 import com.demonwav.mcdev.platform.BaseTemplate
+import com.demonwav.mcdev.util.MinecraftTemplates.Companion.VELOCITY_BUILD_CONSTANTS_TEMPLATE
 import com.demonwav.mcdev.util.MinecraftTemplates.Companion.VELOCITY_BUILD_GRADLE_TEMPLATE
 import com.demonwav.mcdev.util.MinecraftTemplates.Companion.VELOCITY_GRADLE_PROPERTIES_TEMPLATE
 import com.demonwav.mcdev.util.MinecraftTemplates.Companion.VELOCITY_MAIN_CLASS_TEMPLATE
@@ -57,6 +58,14 @@ object VelocityTemplate : BaseTemplate() {
         }
 
         return project.applyTemplate(template, props)
+    }
+
+    fun applyBuildConstants(project: Project, packageName: String): String {
+        val props = mapOf(
+            "PACKAGE" to packageName
+        )
+
+        return project.applyTemplate(VELOCITY_BUILD_CONSTANTS_TEMPLATE, props)
     }
 
     fun applyBuildGradle(project: Project, buildSystem: BuildSystem): String {

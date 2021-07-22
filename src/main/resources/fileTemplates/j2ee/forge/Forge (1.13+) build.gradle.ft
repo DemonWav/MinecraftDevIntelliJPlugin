@@ -21,9 +21,11 @@ apply plugin: 'org.spongepowered.mixin'
 
 group = '${GROUP_ID}'
 version = '${MOD_VERSION}'
-archivesBaseName = '${ARTIFACT_ID}'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(8) // Mojang ships Java 8 to end users, so your mod should target Java 8.
+java {
+    archivesBaseName = '${ARTIFACT_ID}'
+    toolchain.languageVersion = JavaLanguageVersion.of(8) // Mojang ships Java 8 to end users, so your mod should target Java 8.
+}
 
 minecraft {
     // The mappings can be changed at any time, and must be in the following format.

@@ -1,25 +1,32 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
-    }
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0" apply false
 }
 
 group = '${GROUP_ID}'
 version = '${PLUGIN_VERSION}'
 
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
 
-    group = project.group
-    version = project.version
+    group = parent.group
+    version = parent.version
 
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    def targetJavaVersion = 8
+    java {
+        def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        if (JavaVersion.current() < javaVersion) {
+            toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+            options.release = targetJavaVersion
+        }
+    }
 
     repositories {
         mavenCentral()

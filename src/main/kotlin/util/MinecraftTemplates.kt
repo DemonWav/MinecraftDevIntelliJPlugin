@@ -48,6 +48,7 @@ class MinecraftTemplates : FileTemplateGroupDescriptorFactory {
         FileTemplateGroupDescriptor("Velocity", PlatformAssets.VELOCITY_ICON).let { velocityGroup ->
             group.addTemplate(velocityGroup)
             velocityGroup.addTemplate(FileTemplateDescriptor(VELOCITY_MAIN_CLASS_TEMPLATE))
+            velocityGroup.addTemplate(FileTemplateDescriptor(VELOCITY_BUILD_CONSTANTS_TEMPLATE))
             velocityGroup.addTemplate(FileTemplateDescriptor(VELOCITY_MAIN_CLASS_V2_TEMPLATE))
             velocityGroup.addTemplate(FileTemplateDescriptor(VELOCITY_BUILD_GRADLE_TEMPLATE))
             velocityGroup.addTemplate(FileTemplateDescriptor(VELOCITY_SUBMODULE_BUILD_GRADLE_TEMPLATE))
@@ -190,6 +191,7 @@ class MinecraftTemplates : FileTemplateGroupDescriptorFactory {
 
         const val VELOCITY_MAIN_CLASS_TEMPLATE = "Velocity Main Class.java"
         const val VELOCITY_MAIN_CLASS_V2_TEMPLATE = "Velocity Main Class V2.java"
+        const val VELOCITY_BUILD_CONSTANTS_TEMPLATE = "Velocity Build Constants.java"
         const val VELOCITY_BUILD_GRADLE_TEMPLATE = "Velocity build.gradle"
         const val VELOCITY_SUBMODULE_BUILD_GRADLE_TEMPLATE = "Velocity Submodule build.gradle"
         const val VELOCITY_GRADLE_PROPERTIES_TEMPLATE = "Velocity gradle.properties"

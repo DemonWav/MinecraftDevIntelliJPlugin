@@ -1,8 +1,12 @@
 plugins {
     id 'org.spongepowered.plugin' version '0.9.0'
+    id 'com.github.johnrengelman.shadow'
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+java {
+    targetCompatibility = null
+    sourceCompatibility = null
+}
 
 dependencies {
     compile project(':${COMMON_PROJECT_NAME}')
